@@ -1,5 +1,6 @@
 bypass_utility.log
 src/__pycache__/
+venv/
 *.json5
 *.bin
 .idea

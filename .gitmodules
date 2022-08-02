@@ -1,0 +1,3 @@
+[submodule "exploits_collection"]
+	path = exploits_collection
+	url = https://github.com/MTK-bypass/exploits_collection.git
