@@ -1,4 +1,8 @@
-#!/bin/python3
+#!/usr/bin/env pyrun
+# encoding:utf-8 vim:ts=4
+# pyrun venv --
+# watchdog address is mediatek,mt6589-wdt in dts.
+
 
 from src.exploit import exploit
 from src.common import from_bytes, to_bytes
@@ -11,7 +15,7 @@ import argparse
 import os
 
 DEFAULT_CONFIG = "default_config.json5"
-PAYLOAD_DIR = "payloads/"
+PAYLOAD_DIR = "exploits_collection/payloads/"
 DEFAULT_PAYLOAD = "generic_dump_payload.bin"
 DEFAULT_DA_ADDRESS = 0x200D00
 
@@ -56,6 +60,7 @@ def main():
     if arguments.test and not arguments.kamakiri:
         dump_ptr = int(arguments.test, 16)
         found = False
+        found, dump_ptr = True, 0xd7ac
         while not found:
             log("Test mode, testing " + hex(dump_ptr) + "...")
             found, dump_ptr = bruteforce(device, config, dump_ptr)
@@ -102,6 +107,10 @@ def main():
 
         device.send_da(config.payload_address, len(payload), 0x100, payload)
         device.jump_da(config.payload_address)
+        if 'boot' in config.payload:
+            log("boot, exited")
+            device.close()
+            return 0
 
         result = device.read(4)
 

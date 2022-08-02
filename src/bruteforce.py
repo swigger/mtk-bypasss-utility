@@ -2,7 +2,7 @@ from src.common import to_bytes, from_bytes
 
 import usb
 import array
-import struct
+import os
 
 def bruteforce(device, config, dump_ptr, dump=False):
 
@@ -33,11 +33,16 @@ def bruteforce(device, config, dump_ptr, dump=False):
             pass
 
         for i in range(4):
-            udev.ctrl_transfer(0x21, 0x20, 0, 0, linecode + array.array('B', to_bytes(dump_ptr - 6 + (4 - i), 4, '<')))
+            dt = linecode + array.array('B', to_bytes(dump_ptr - 6 + (4 - i), 4, '<'))
+            print("ctrl transfer:", type(dt), dt)
+            udev.ctrl_transfer(0x21, 0x20, 0, 0, dt)
             udev.ctrl_transfer(0x80, 0x6, 0x0200, 0, 9)
 
-        brom = bytearray(device.cmd_da(0, 0, 0x20000))
-        brom[dump_ptr - 1:] = b"\x00" + to_bytes(0x100030, 4, '<') + brom[dump_ptr + 4:]
+        offset = int(os.getenv("DUMP_OFFSET", "0"), 0)
+        len1 = int(os.getenv("DUMP_LENGTH", "0x20000"), 0)
+        brom = bytearray(device.cmd_da(0, offset, len1))
+        if offset < dump_ptr < offset+len1:
+            brom[dump_ptr - 1:] = b"\x00" + to_bytes(0x100030, 4, '<') + brom[dump_ptr + 4:]
         return brom
 
     else:
